@@ -111,7 +111,8 @@ node --check client.js    # 唯一的自动检查：语法（package type: modul
 ## 发布
 
 - 包名已是可发布形态：`dsh-plugin-quote-comment`，无 `private`。`engines.dsh` 必须写 `^0.2.2-0`：当前 DSH 是 `0.2.2-rc.2`，SemVer 默认排除预发布版，写成 `^0.2.2` 会判为不兼容并**阻止安装**。
-- `npm publish --access public` 后，每次发版要在 `market/index.json` 的 `versions[]` 追加一条：`version` 是精确 SemVer，`publishTimestamp` 是 **Unix 秒**，`source.type` 为 `npm`（或 `git` + 40 位小写 commit + 可选 `path`）。
+- 当前 `0.1.0` 用 **git 源**（`type: "git"` + 40 位 commit），不依赖 npm 账号，也不需要绕 2FA；代价是**每次发版必须把 `commit` 换成本次要安装的提交 SHA**，否则用户装的还是旧代码。
+- 改用 npm 时：`npm publish --access public`（账号开了 2FA 需 granular token 勾选 bypass 2FA，或 `--otp=<code>`）；每次发版在 `versions[]` 追加一条：`version` 是精确 SemVer，`publishTimestamp` 是 **Unix 秒**。
 - `market/index.json` 与 `market/icons/` 一起托管在任意 https 静态地址；`icon` 是相对索引 URL 的路径。用户侧：Plugins → Experimental plugins 打开 **Custom plugin indexes** → Discover 添加索引 URL。
 - 自检：把文档交给真实校验器 `parseMarketIndex(doc, indexUrl)`（`@deepseek-ai/dsh-plugin-market-index`，在 DSH 安装内，用 `ELECTRON_RUN_AS_NODE=1` 从 app.asar 动态 import）。
 - 市场只认索引 JSON，**没有中心化上架流程**：能不能"被收录"取决于谁维护那份索引。

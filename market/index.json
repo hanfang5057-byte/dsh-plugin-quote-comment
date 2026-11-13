@@ -46,7 +46,11 @@
         {
           "version": "0.1.0",
           "publishTimestamp": 1794559423,
-          "source": { "type": "npm" },
+          "source": {
+            "type": "git",
+            "url": "https://gitee.com/hanfang5057/dsh-plugin-quote-comment",
+            "commit": "1c2f076aab7a56a7535e2799e243e1f9b75882f9"
+          },
           "engines": { "dsh": "^0.2.2-0" }
         }
       ]
