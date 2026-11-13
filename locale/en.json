@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Quote with comment",
+    "description": "Takes over Quote text, asks for a comment, then inserts the quote and the comment as one block.",
+    "detail": "docs/DETAIL.md"
+  }
+}
