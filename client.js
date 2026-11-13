@@ -17,7 +17,7 @@
  * at the same priority throws instead of replacing.
  */
 window.__ModuleLoader__.load({
-  id: '@local/quote-comment',
+  id: 'dsh-plugin-quote-comment',
   factory(require) {
     const React = require('react')
     const h = React.createElement
@@ -237,11 +237,11 @@ window.__ModuleLoader__.load({
 
     /** Mount the plugin stylesheet; the cleanup removes it with the last holder. */
     function mountStyles() {
-      const tagId = '@local/quote-comment/page.css'
+      const tagId = 'dsh-plugin-quote-comment/page.css'
       styleHolders += 1
       if (styleHolders === 1 && document.querySelector(`style[data-plugin-css="${tagId}"]`) === null) {
         const tag = document.createElement('style')
-        tag.dataset.plugin = '@local/quote-comment'
+        tag.dataset.plugin = 'dsh-plugin-quote-comment'
         tag.dataset.pluginCss = tagId
         tag.textContent = CSS
         document.head.appendChild(tag)

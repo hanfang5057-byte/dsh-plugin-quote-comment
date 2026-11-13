@@ -1,9 +1,14 @@
 {
-  "name": "@local/quote-comment",
+  "name": "dsh-plugin-quote-comment",
   "version": "0.1.0",
-  "private": true,
   "description": "Ask for a comment before inserting a quoted selection, as one block.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/hanfang5057/dsh-plugin-quote-comment.git"
+  },
+  "homepage": "https://gitee.com/hanfang5057/dsh-plugin-quote-comment",
+  "license": "MIT",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -18,6 +23,16 @@
     "docs",
     "icon.svg"
   ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "quote",
+    "comment"
+  ],
+  "engines": {
+    "dsh": "^0.2.2-0"
+  },
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {
