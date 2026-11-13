@@ -11,12 +11,18 @@
   "metadata": {
     "categories": {
       "composer": {
-        "title": { "en": "Composer", "zh": "输入框" }
+        "title": {
+          "en": "Composer",
+          "zh": "输入框"
+        }
       }
     },
     "labels": {
       "quote": {
-        "title": { "en": "Quote", "zh": "引用" }
+        "title": {
+          "en": "Quote",
+          "zh": "引用"
+        }
       }
     }
   },
@@ -39,15 +45,35 @@
       },
       "metadata": {
         "category": "composer",
-        "labels": ["quote"],
-        "keywords": ["quote", "comment", "composer"]
+        "labels": [
+          "quote"
+        ],
+        "keywords": [
+          "quote",
+          "comment",
+          "composer"
+        ]
       },
       "versions": [
         {
+          "version": "0.1.1",
+          "publishTimestamp": 1794564131,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "^0.2.2-0"
+          }
+        },
+        {
           "version": "0.1.0",
           "publishTimestamp": 1794559423,
-          "source": { "type": "npm" },
-          "engines": { "dsh": "^0.2.2-0" }
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "^0.2.2-0"
+          }
         }
       ]
     }

@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-quote-comment",
-  "version": "0.1.0",
-  "description": "Ask for a comment before inserting a quoted selection, as one block.",
+  "version": "0.2.0",
+  "description": "Ask for a comment before inserting a quoted selection, as one block — in chat and in file previews.",
   "type": "module",
   "repository": {
     "type": "git",

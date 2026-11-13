@@ -3,8 +3,14 @@
 Ask for a comment before inserting a quoted selection in the DeepSeek Harness Web GUI,
 and insert the quote and the comment as **one** block.
 
+![The 引用并评论 dialog: the quote above, the comment edited in place below it](https://cdn.jsdelivr.net/gh/hanfang5057-byte/dsh-plugin-quote-comment@main/screenshots/02-dialog.png)
+
 Select text in a chat → click **Quote text** → write a comment → Save. The composer then
-holds a single quote chip, and the sent message is one blockquote:
+holds a single quote chip:
+
+![The composer after saving: one quote chip](https://cdn.jsdelivr.net/gh/hanfang5057-byte/dsh-plugin-quote-comment@main/screenshots/03-composer-chip.png)
+
+…and the sent message is one blockquote:
 
 ```
 > the quoted text
