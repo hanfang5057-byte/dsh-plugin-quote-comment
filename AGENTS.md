@@ -129,7 +129,7 @@ node --check client.js    # 唯一的自动检查：语法（package type: modul
 ## 发布
 
 - 包名已是可发布形态：`dsh-plugin-quote-comment`，无 `private`。`engines.dsh` 必须写 `^0.2.2-0`：当前 DSH 是 `0.2.2-rc.2`，SemVer 默认排除预发布版，写成 `^0.2.2` 会判为不兼容并**阻止安装**。
-- `0.1.0` 已发布到 npm，索引用 **npm 源**（`{"type":"npm"}`）。每次发版：`npm publish --access public`，再在 `versions[]` 追加一条（`version` 精确 SemVer、`publishTimestamp` 为 **Unix 秒**）。
+- `0.2.0` 为当前最新（`0.1.0`、`0.1.1` 也已发布），索引用 **npm 源**（`{"type":"npm"}`）。每次发版：`npm publish --access public`，再在 `versions[]` 追加一条（`version` 精确 SemVer、`publishTimestamp` 为 **Unix 秒**）。
 - 账号开了 2FA 时，CLI 发布需要 granular token 勾选 **Bypass two-factor authentication**，或 `--otp=<code>`；`_authToken` 必须写在 `//registry.npmjs.org/:_authToken` 下——主机名拼错（如 `npmns`）会静默失效，表现为莫名其妙的 403。
 - 备选：改用 **git 源**（`type: "git"` + 40 位 commit），不依赖 npm 账号；代价是每次发版都要更新 commit。
 - `market/index.json` 与 `market/icons/` 一起托管在任意 https 静态地址；`icon` 是相对索引 URL 的路径。用户侧：Plugins → Experimental plugins 打开 **Custom plugin indexes** → Discover 添加索引 URL。

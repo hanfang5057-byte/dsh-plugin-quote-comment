@@ -34,8 +34,8 @@
         "zh": "引用并评论"
       },
       "description": {
-        "en": "Takes over Quote text: asks for a comment first, then inserts the quote and the comment as one block.",
-        "zh": "接管「引用文本」：先填写评论，再把引用与评论作为一个整体插入输入框。"
+        "en": "Takes over Quote text: asks for a comment, then inserts the quote and the comment as one block — in chat and in file previews.",
+        "zh": "接管「引用文本」：先填写评论，再把引用与评论作为一个整体插入输入框；对话与右侧栏文件预览都支持。"
       },
       "icon": "icons/quote-comment.svg",
       "author": "hanfang",
@@ -51,10 +51,21 @@
         "keywords": [
           "quote",
           "comment",
-          "composer"
+          "composer",
+          "preview"
         ]
       },
       "versions": [
+        {
+          "version": "0.2.0",
+          "publishTimestamp": 1794565076,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": "^0.2.2-0"
+          }
+        },
         {
           "version": "0.1.1",
           "publishTimestamp": 1794564131,
