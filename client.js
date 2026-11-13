@@ -849,9 +849,11 @@ window.__ModuleLoader__.load({
 
       // One invisible entry per mounted composer publishes that Session's input
       // seat; the floating preview action inserts through it, so a preview is
-      // quotable exactly while its Session's composer can accept a draft.
-      ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({
-        name: 'conversation.composer.dock',
+      // quotable exactly while its Session's composer can accept a draft. The
+      // ambient strip above the composer mounts in the hero state too, which is
+      // where a blank draft is most likely to quote a file.
+      ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({
+        name: 'conversation.input.dock',
         id: 'quote-comment.preview-bridge',
       }, PreviewComposerBridge))
 

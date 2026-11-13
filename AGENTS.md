@@ -4,8 +4,8 @@
 
 ## 项目是什么
 
-- 包名 `dsh-plugin-quote-comment`，版本 0.1.0，无依赖、无构建、无测试套件。仓库已是 git 仓库；除用户明确要求外，不要提交或推送。
-- 作用：接管 DSH 对话里选区浮出的「引用文本」按钮。点击后先弹窗索要一条评论，再把**引用原文 + 评论**作为**一个整体**插入输入框。
+- 包名 `dsh-plugin-quote-comment`，版本 0.2.0，无依赖、无构建、无测试套件。仓库已是 git 仓库；除用户明确要求外，不要提交或推送。
+- 作用：接管 DSH 对话里选区浮出的「引用文本」按钮；右侧栏文件预览里的选区也能引用。点击后先弹窗索要一条评论，再把**引用原文 + 评论**（预览引用还带**来源**）作为**一个整体**插入输入框。
 - 用户可见说明在 `docs/DETAIL.md`；插件展示文案（标题 / 描述 / 详情路径）在 `locale/*.json`。
 - 目标宿主是本机已安装的 DSH（`desktop` profile）。profile 用 `link:` 依赖指向本目录，因此**改代码不需要重新安装 bundle**；也不要手工编辑 `~/.dsh/profiles/desktop` 下的文件。
 
@@ -13,7 +13,7 @@
 
 | 文件 | 职责 | 何时改 |
 |---|---|---|
-| `client.js` | 全部行为：字典、样式、按钮、弹窗、broker、两个 slot 注册 | 几乎总是在这里 |
+| `client.js` | 全部行为：字典、样式、按钮、弹窗、broker、预览桥与选区浮层、四个 slot 注册 | 几乎总是在这里 |
 | `index.js` | Host 侧空 `apply()`，只为让 bundle 有一条可激活的插件行 | 基本不动 |
 | `cordis.patch.yml` | 插入插件行的 loader patch（行 id `quote-comment`） | 改行 id / 行配置时 |
 | `package.json` | `dsh.bundle` / `dsh.client` 清单、`exports`、`files` | 新增文件、改入口或注入依赖时 |
@@ -33,6 +33,12 @@
 3. 点击 → `broker.ask()` 打开挂在 `shell.overlay` 的弹窗（`id: 'quote-comment.dialog'`，`order: 20`）。
 4. 保存 → `buildBlock()` 拼出引用文本与 chip 摘要 → `inputActions.insertQuote(text, summary)`。
 5. 输入框里是**一个**原子 quote chip；发送时由 composer 逐行加 `> ` 前缀。
+
+文件预览走第二条路径（预览区没有 text-interaction 座位）：
+
+1. `conversation.input.dock`（session 作用域）上一个**渲染 null** 的桥 `PreviewComposerBridge` 把该会话的 `inputActions` / `phase` / 可写性登记到模块级 `previewBridges`（按 sessionId 引用计数）。
+2. `shell.overlay` 上的 `PreviewQuoteAction` 监听 `selectionchange`，只在选区落在 `[data-document-preview]` 内、取得到会话桥、输入框可写且 `phase === 'plain'` 时，紧贴选区浮出按钮。
+3. 点击 → 同一个 `broker.ask()`（多带一个 `source`）→ 同一个弹窗 → `buildBlock(text, comment, t, source)` → 该会话的 `inputActions.insertQuote`。
 
 `broker` 是插件内部的 observable + Promise 桥：`pending` 供弹窗订阅，`ask/answer/cancel` 负责结算。Host 侧没有任何逻辑，也不参与模型请求。
 
@@ -72,9 +78,21 @@
 - 打开时聚焦 textarea；`Tab` 在弹窗内循环；`Esc` 取消；`⌘/Ctrl + Enter` 保存；弹窗带 `role="dialog"` 与 `aria-modal`。
 - 打开前先 `dismiss()` 收起浮层按钮，再进入弹窗。
 
+### 预览引用
+
+- 预览区**没有** text-interaction 座位；选区由本插件自己在 `shell.overlay` 里监听，不要给预览加 cell 或改预览组件。
+- 会话桥：`conversation.input.dock` 上一条渲染 `null` 的注册（`id: 'quote-comment.preview-bridge'`）。只靠会话作用域的标准 props 拿 `inputActions`；不要在别处找 composer API，也不要用反射拿内部对象。
+- 会话归属：选区祖先的 `[data-sidebar-right-session]`；取不到时解析预览根的 `data-textpreview-url`（`dsh-resource://file/session/<sid>/<path>`）。这两个属性是**内部标记**，升级 DSH 后先核对。
+- 只有这些预览会浮出按钮：Markdown、代码、纯文本、PDF / Office（PDF 文本层）。HTML 渲染在沙箱 iframe 里、表格是单元格选择、图片没有文字——读不到选区，不要试图兜底。
+- 行号只来自真实源码行：纯文本读 `[data-textpreview-line]`，代码数 `pre` 里行与行之间的换行（行号是 `::before`，不进选区）。Markdown / PDF 只写路径，不要用渲染行数冒充源码行。
+- 浮出条件：选区非空、落在 `[data-document-preview]` 内、桥存在、`phase === 'plain'`、会话可写、预览可见（rect 非零）。弹窗打开期间（`pending !== null`）绝不显示。
+- 浮层按钮的定位放 `shell.overlay`（`id: 'quote-comment.preview-action'`，`order: 18`），`position: fixed` 按视口坐标算；不要挂进预览面板，否则会被面板的 overflow 裁剪。
+- 来源必须写进**引用文本内部**，且排在 `【评论】` 之前：`【来源】路径:起-止`（英文 `[Source]`）。它有源码行时写 `:12` / `:12-18`，没有就只写路径。
+- chip 的 `label` 只数正文行（不含来源行），`title` 是含来源行的完整引用。
+
 ### 资源与清理
 
-- 所有注册都包在 `apply` 内的 `ctx.effect(...)` 里：字典、样式、待处理请求、两个 slot 注册。
+- 所有注册都包在 `apply` 内的 `ctx.effect(...)` 里：字典、样式、待处理请求、四个 slot 注册、`previewBridges` 的兜底清空。
 - 样式表按持有者计数挂载 / 移除（`styleHolders`），两个挂载点不会互相删样式。
 - 不要写组件外的 DOM、不要 `document.body.appendChild`、不要替换 app root。
 
@@ -130,6 +148,12 @@ node --check client.js    # 唯一的自动检查：语法（package type: modul
 6. `Esc` / 取消 / 点遮罩 → 什么都不插入，焦点回到原处。
 7. 让输入框进入发送态后点按钮 → 不插内容，也不弹窗。
 8. 中英文界面、浅色 / 深色主题各看一次；控制台没有 `slot entry crashed`。
+9. 右栏打开 `.md` / 代码 / 纯文本 → 拖选 → 浮出按钮 → 弹窗顶部显示 `路径:起-止` → 保存后 chip 内首行是 `【来源】路径:起-止`。
+10. 代码预览的浮出按钮不把行号带进引用文本；纯文本跨行选区写成区间。
+11. PDF / docx 预览：文本层可选中并引用（只写路径）；HTML 预览、xlsx 预览、图片**不出现**按钮。
+12. 浮窗 / 分屏里第二个预览：按钮跟在正确 pane 的选区旁；收起右栏、切换会话、滚出可见范围后按钮消失。
+13. 新会话（hero 态，尚未发送任何消息）里预览文件也能浮出按钮；输入框发送中或会话不可写时不显示。
+14. 预览引用取消 / 遮罩 / `Esc`：不插入、不清选区；保存时输入框被占用则带着评论重开并提示。
 
 ## 常见改动
 
@@ -145,6 +169,9 @@ node --check client.js    # 唯一的自动检查：语法（package type: modul
 - `ctx.slots.inject(key, () => ctx.slots.register(options, Component))`；`priority` 越低越先渲染（`docs/subsystems/slots.md`）。
 - `conversation.chat.text-interaction` 的 props：`dismiss`、`readText`、`clearSelection`、`inputActions`、`useSession`、`useInput`、`t`。
 - `inputActions.insertQuote(text, summary?): boolean`：`phase !== 'plain'`、`text` 全空白或草稿拒绝时返回 `false`。
+- `conversation.input.dock`（list、session 作用域）与 `conversation.chat.text-interaction` 一样自动获得标准 props `sessionId`、`useSession`、`useInput`、`inputActions`：标准 props 按**座位 scope** 注入，与注册包无关（`docs/subsystems/slots.md` 的 “standard props” 表）。
+- 预览标记（均为内部属性，非公开契约）：预览根 `data-document-preview`（渲染器 id）与 `data-textpreview-url`（`dsh-resource://file/session/<sid>/<path>`）、纯文本行 `data-textpreview-line`、头行 `data-textpreview-path`、右栏面板 `data-sidebar-right-session`、预览正文 `data-textpreview-body`。来源：`@deepseek-ai/dsh-client-ui-sidebar-documentpreview/src/client/TextPreview.tsx`、`PreviewFrame.tsx`、`text/TextBody.tsx`、`code/CodeBody.tsx`，以及 `@deepseek-ai/dsh-client-ui-sidebar-right/src/client/shell/SidebarRight.tsx`。
+- `inputActions.insertQuote` 不需要焦点：插到编辑器保留的插入点（无则草稿末尾）并自动聚焦；预览引用正是依赖这一点。
 - 内置引用实现：`@deepseek-ai/dsh-message-quotes/src/client/index.ts` 与 `QuoteSelection.tsx`（key `quote`、无 priority；交互 admission 在 `uiConversation.interactions`）。
 - Chat 侧说明：`@deepseek-ai/dsh-client-ui-chat/README.md`；slot 与 composer 契约在 `@deepseek-ai/dsh-client-ui-conversation/src/client/contract/slots.ts`、`input.ts`。
 - 客户端清单与 HMR：`@deepseek-ai/dsh-client-modules/src/index.ts`（解析 `exports["./client"]`、`artifactBaseline`、`/plugins/??<id>/client.js&rev=` 组合脚本）、`@deepseek-ai/dsh-client-hmr`。
@@ -153,7 +180,9 @@ node --check client.js    # 唯一的自动检查：语法（package type: modul
 
 ## 边界与现状
 
-- 插件启用期间接管**所有会话**的引用按钮；`message-quotes` 被禁用时按钮不会出现（本插件只替换 cell，不自己判定选区）。
+- 插件启用期间接管**所有会话**的引用按钮；`message-quotes` 被禁用时对话里的按钮不会出现（本插件只替换 cell，不自己判定对话选区）。
+- 预览引用独立于 `message-quotes`：它自己判定选区，不依赖该插件的交互准入。
+- 预览引用的可用范围：Markdown / 代码 / 纯文本 / PDF / Office（PDF 文本层）。HTML（沙箱 iframe）、表格（单元格选择）、图片（无文字）不支持；行号只有代码与纯文本能给出。
 - 引用与评论是一个原子 chip，不能分别编辑；要改评论就删掉 chip 重新引用。
-- 选区为空、输入框忙、会话不可写时按原生逻辑处理，不做额外提示。
+- 对话选区为空、输入框忙、会话不可写时按原生逻辑处理，不做额外提示；预览选区在这些条件下直接不显示按钮。
 - **详情文档现状与 DSH 插件规范有偏差**：DSH 期望 `meta.detail` 指向「一张特性图」的文档，用法写在 `meta.description`，中文应指向 `DETAIL.zh.md`；当前 `docs/DETAIL.md` 是纯文字说明，中英 `meta.detail` 都指向它，也没有 `preview.svg`。若要与规范对齐：把用法 / 限制迁进 `meta.description`，补 `docs/preview.svg`，给中文单独 `docs/DETAIL.zh.md`，并同步 `files` 与两个 locale。不改也能正常工作。
